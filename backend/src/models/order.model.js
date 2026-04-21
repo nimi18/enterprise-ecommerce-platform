@@ -156,10 +156,13 @@ const orderSchema = new mongoose.Schema(
         'pending',
         'confirmed',
         'processing',
+        'packed',
         'shipped',
+        'out_for_delivery',
         'delivered',
         'cancelled',
         'failed',
+        'returned',
       ],
       default: 'pending',
     },
@@ -173,6 +176,34 @@ const orderSchema = new mongoose.Schema(
     shippingRecord: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Shipment',
+      default: null,
+    },
+
+    courierName: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    trackingNumber: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    trackingUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    shippedAt: {
+      type: Date,
+      default: null,
+    },
+
+    deliveredAt: {
+      type: Date,
       default: null,
     },
 
@@ -195,6 +226,7 @@ orderSchema.index({ orderNumber: 1 }, { unique: true });
 orderSchema.index({ user: 1 });
 orderSchema.index({ paymentStatus: 1 });
 orderSchema.index({ orderStatus: 1 });
+orderSchema.index({ trackingNumber: 1 });
 orderSchema.index({ createdAt: -1 });
 
 const Order = mongoose.model('Order', orderSchema);

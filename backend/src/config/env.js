@@ -21,6 +21,13 @@ const envSchema = Joi.object({
   JWT_EXPIRES_IN: Joi.string().default('7d'),
 
   FRONTEND_URL: Joi.string().default('http://localhost:5173'),
+  BACKEND_URL: Joi.string().default('http://127.0.0.1:8000'),
+
+  STRIPE_SECRET_KEY: Joi.string().required(),
+  STRIPE_WEBHOOK_SECRET: Joi.string().allow('').optional(),
+
+  EMAIL_USER: Joi.string().allow('').optional(),
+  EMAIL_PASS: Joi.string().allow('').optional(),
 }).unknown();
 
 const { error, value } = envSchema.validate(process.env, {
@@ -38,6 +45,11 @@ const env = {
   jwtSecret: value.JWT_SECRET,
   jwtExpiresIn: value.JWT_EXPIRES_IN,
   frontendUrl: value.FRONTEND_URL,
+  backendUrl: value.BACKEND_URL,
+  stripeSecretKey: value.STRIPE_SECRET_KEY,
+  stripeWebhookSecret: value.STRIPE_WEBHOOK_SECRET,
+  emailUser: value.EMAIL_USER,
+  emailPass: value.EMAIL_PASS,
 };
 
 export default env;

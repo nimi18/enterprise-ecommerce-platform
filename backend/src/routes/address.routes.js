@@ -31,6 +31,58 @@ const router = express.Router();
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - fullName
+ *               - phone
+ *               - addressLine1
+ *               - city
+ *               - state
+ *               - postalCode
+ *               - country
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 example: Nimita Malhotra
+ *               phone:
+ *                 type: string
+ *                 example: "9999999999"
+ *               addressLine1:
+ *                 type: string
+ *                 example: 123 Street
+ *               addressLine2:
+ *                 type: string
+ *                 example: Near Metro Station
+ *               city:
+ *                 type: string
+ *                 example: Delhi
+ *               state:
+ *                 type: string
+ *                 example: Delhi
+ *               postalCode:
+ *                 type: string
+ *                 example: "110001"
+ *               country:
+ *                 type: string
+ *                 example: India
+ *               landmark:
+ *                 type: string
+ *                 example: Opposite City Mall
+ *               addressType:
+ *                 type: string
+ *                 enum: [home, work, other]
+ *                 example: home
+ *               isDefault:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       201:
+ *         description: Address added successfully
  */
 router.post('/', authMiddleware, validate(createAddressSchema), addAddressController);
 
@@ -42,6 +94,9 @@ router.post('/', authMiddleware, validate(createAddressSchema), addAddressContro
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Addresses fetched successfully
  */
 router.get('/', authMiddleware, getMyAddressesController);
 
@@ -53,6 +108,15 @@ router.get('/', authMiddleware, getMyAddressesController);
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Address fetched successfully
  */
 router.get('/:addressId', authMiddleware, getAddressByIdController);
 
@@ -64,6 +128,56 @@ router.get('/:addressId', authMiddleware, getAddressByIdController);
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               fullName:
+ *                 type: string
+ *                 example: Nimita Malhotra
+ *               phone:
+ *                 type: string
+ *                 example: "9999999999"
+ *               addressLine1:
+ *                 type: string
+ *                 example: 123 Street
+ *               addressLine2:
+ *                 type: string
+ *                 example: Near Metro Station
+ *               city:
+ *                 type: string
+ *                 example: Delhi
+ *               state:
+ *                 type: string
+ *                 example: Delhi
+ *               postalCode:
+ *                 type: string
+ *                 example: "110001"
+ *               country:
+ *                 type: string
+ *                 example: India
+ *               landmark:
+ *                 type: string
+ *                 example: Opposite City Mall
+ *               addressType:
+ *                 type: string
+ *                 enum: [home, work, other]
+ *                 example: home
+ *               isDefault:
+ *                 type: boolean
+ *                 example: true
+ *     responses:
+ *       200:
+ *         description: Address updated successfully
  */
 router.patch(
   '/:addressId',
@@ -80,6 +194,15 @@ router.patch(
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Address deleted successfully
  */
 router.delete('/:addressId', authMiddleware, deleteAddressController);
 
@@ -91,6 +214,15 @@ router.delete('/:addressId', authMiddleware, deleteAddressController);
  *     tags: [Addresses]
  *     security:
  *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: addressId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Default address updated successfully
  */
 router.post(
   '/:addressId/set-default',

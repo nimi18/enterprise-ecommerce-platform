@@ -12,6 +12,8 @@ const addressSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      minlength: 2,
+      maxlength: 100,
     },
 
     phone: {
@@ -20,28 +22,32 @@ const addressSchema = new mongoose.Schema(
       trim: true,
     },
 
-    line1: {
+    addressLine1: {
       type: String,
       required: true,
       trim: true,
+      maxlength: 200,
     },
 
-    line2: {
+    addressLine2: {
       type: String,
       trim: true,
       default: '',
+      maxlength: 200,
     },
 
     city: {
       type: String,
       required: true,
       trim: true,
+      maxlength: 100,
     },
 
     state: {
       type: String,
       required: true,
       trim: true,
+      maxlength: 100,
     },
 
     postalCode: {
@@ -54,6 +60,20 @@ const addressSchema = new mongoose.Schema(
       type: String,
       default: 'India',
       trim: true,
+      maxlength: 100,
+    },
+
+    landmark: {
+      type: String,
+      trim: true,
+      default: '',
+      maxlength: 200,
+    },
+
+    addressType: {
+      type: String,
+      enum: ['home', 'work', 'other'],
+      default: 'home',
     },
 
     isDefault: {

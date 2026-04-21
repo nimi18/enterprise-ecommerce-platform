@@ -21,6 +21,26 @@ const router = express.Router();
  *     tags: [Checkout]
  *     security:
  *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - addressId
+ *               - shippingMethod
+ *             properties:
+ *               addressId:
+ *                 type: string
+ *                 example: 680f3a6f0c1234567890abcd
+ *               shippingMethod:
+ *                 type: string
+ *                 enum: [standard, express]
+ *                 example: standard
+ *     responses:
+ *       201:
+ *         description: Order created successfully
  */
 router.post('/', authMiddleware, validate(checkoutSchema), checkoutController);
 

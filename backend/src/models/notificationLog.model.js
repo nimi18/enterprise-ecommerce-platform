@@ -22,7 +22,8 @@ const notificationLogSchema = new mongoose.Schema(
 
     channel: {
       type: String,
-      default: 'email',
+      enum: ['email', 'system'],
+      default: 'system',
     },
 
     templateName: {
@@ -36,13 +37,34 @@ const notificationLogSchema = new mongoose.Schema(
       enum: ['queued', 'sent', 'failed'],
       default: 'queued',
     },
+
+    payloadSummary: {
+      type: mongoose.Schema.Types.Mixed,
+      default: null,
+    },
+
+    providerMessageId: {
+      type: String,
+      trim: true,
+      default: null,
+    },
+
+    failureReason: {
+      type: String,
+      trim: true,
+      default: null,
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 notificationLogSchema.index({ user: 1 });
 notificationLogSchema.index({ order: 1 });
 notificationLogSchema.index({ status: 1 });
+notificationLogSchema.index({ type: 1 });
+notificationLogSchema.index({ createdAt: -1 });
 
 const NotificationLog = mongoose.model('NotificationLog', notificationLogSchema);
 

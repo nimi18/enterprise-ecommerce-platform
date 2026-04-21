@@ -2,22 +2,15 @@ import mongoose from 'mongoose';
 
 const paymentLogSchema = new mongoose.Schema(
   {
-    order: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Order',
-      required: true,
-    },
-
     provider: {
       type: String,
-      required: true,
       default: 'stripe',
     },
 
-    providerPaymentId: {
+    eventId: {
       type: String,
+      required: true,
       trim: true,
-      default: null,
     },
 
     eventType: {
@@ -26,23 +19,45 @@ const paymentLogSchema = new mongoose.Schema(
       trim: true,
     },
 
+    orderId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Order',
+      default: null,
+    },
+
+    paymentReference: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
     status: {
       type: String,
+      enum: ['success', 'failure'],
       required: true,
-      trim: true,
     },
 
     payloadSummary: {
       type: mongoose.Schema.Types.Mixed,
+      required: true,
+    },
+
+    error: {
+      type: String,
       default: null,
+      trim: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-paymentLogSchema.index({ order: 1 });
-paymentLogSchema.index({ providerPaymentId: 1 });
+paymentLogSchema.index({ eventId: 1 }, { unique: true });
 paymentLogSchema.index({ eventType: 1 });
+paymentLogSchema.index({ orderId: 1 });
+paymentLogSchema.index({ paymentReference: 1 });
+paymentLogSchema.index({ createdAt: -1 });
 
 const PaymentLog = mongoose.model('PaymentLog', paymentLogSchema);
 
