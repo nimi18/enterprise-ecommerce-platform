@@ -7,8 +7,10 @@ import {
   findProductById,
   findProductBySku,
   findProductBySlug,
-  updateProductById,
+  listFeaturedProducts,
   listProducts as listProductsRepository,
+  listRecommendedProducts,
+  updateProductById,
 } from '../repositories/product.repository.js';
 import AppError from '../utils/appError.js';
 import generateSlug from '../utils/slug.js';
@@ -41,6 +43,7 @@ const buildProductResponse = (product) => {
     images: product.images || [],
     averageRating: product.averageRating,
     reviewCount: product.reviewCount,
+    isFeatured: product.isFeatured,
     isActive: product.isActive,
     createdBy: product.createdBy ?? null,
     createdAt: product.createdAt,
@@ -82,6 +85,9 @@ const listProductsService = async (query) => {
   const limit = Number(query.limit || 10);
   const search = query.search || '';
   const category = query.category;
+  const minPrice = typeof query.minPrice !== 'undefined' ? Number(query.minPrice) : null;
+  const maxPrice = typeof query.maxPrice !== 'undefined' ? Number(query.maxPrice) : null;
+  const minRating = typeof query.minRating !== 'undefined' ? Number(query.minRating) : null;
   const sortBy = query.sortBy || 'createdAt';
   const sortOrder = query.sortOrder || 'desc';
 
@@ -101,6 +107,22 @@ const listProductsService = async (query) => {
 
   if (search) {
     filter.$text = { $search: search };
+  }
+
+  if (minPrice !== null || maxPrice !== null) {
+    filter.price = {};
+
+    if (minPrice !== null) {
+      filter.price.$gte = minPrice;
+    }
+
+    if (maxPrice !== null) {
+      filter.price.$lte = maxPrice;
+    }
+  }
+
+  if (minRating !== null) {
+    filter.averageRating = { $gte: minRating };
   }
 
   const skip = (page - 1) * limit;
@@ -187,10 +209,37 @@ const deactivateProductService = async (productId) => {
   return buildProductResponse(updatedProduct);
 };
 
+const getFeaturedProductsService = async () => {
+  const products = await listFeaturedProducts(8);
+  return products.map(buildProductResponse);
+};
+
+const getRecommendedProductsService = async (productId) => {
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new AppError('Invalid product id', 400, ERROR_CODES.BAD_REQUEST);
+  }
+
+  const product = await findProductById(productId);
+
+  if (!product) {
+    throw new AppError('Product not found', 404, ERROR_CODES.NOT_FOUND);
+  }
+
+  const products = await listRecommendedProducts({
+    categoryId: product.category?._id || product.category,
+    excludeProductId: productId,
+    limit: 8,
+  });
+
+  return products.map(buildProductResponse);
+};
+
 export {
   createProductService,
   listProductsService,
   getProductByIdService,
   updateProductService,
   deactivateProductService,
+  getFeaturedProductsService,
+  getRecommendedProductsService,
 };

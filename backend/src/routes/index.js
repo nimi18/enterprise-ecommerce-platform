@@ -9,6 +9,7 @@ import healthRoutes from './health.routes.js';
 import orderRoutes from './order.routes.js';
 import paymentRoutes from './payment.routes.js';
 import productRoutes from './product.routes.js';
+import reviewRoutes from './review.routes.js';
 import webhookRoutes from './webhook.routes.js';
 import wishlistRoutes from './wishlist.routes.js';
 
@@ -18,6 +19,7 @@ router.use('/health', healthRoutes);
 router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
+router.use('/reviews', reviewRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/cart', cartRoutes);
 router.use('/addresses', addressRoutes);

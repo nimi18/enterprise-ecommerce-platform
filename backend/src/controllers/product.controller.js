@@ -1,7 +1,9 @@
 import {
   createProductService,
   deactivateProductService,
+  getFeaturedProductsService,
   getProductByIdService,
+  getRecommendedProductsService,
   listProductsService,
   updateProductService,
 } from '../services/product.service.js';
@@ -58,10 +60,32 @@ const deactivateProductController = asyncHandler(async (req, res) => {
   });
 });
 
+const getFeaturedProductsController = asyncHandler(async (req, res) => {
+  const data = await getFeaturedProductsService();
+
+  return sendSuccessResponse(res, {
+    statusCode: 200,
+    message: 'Featured products fetched successfully',
+    data,
+  });
+});
+
+const getRecommendedProductsController = asyncHandler(async (req, res) => {
+  const data = await getRecommendedProductsService(req.params.productId);
+
+  return sendSuccessResponse(res, {
+    statusCode: 200,
+    message: 'Recommended products fetched successfully',
+    data,
+  });
+});
+
 export {
   createProductController,
   listProductsController,
   getProductByIdController,
   updateProductController,
   deactivateProductController,
+  getFeaturedProductsController,
+  getRecommendedProductsController,
 };

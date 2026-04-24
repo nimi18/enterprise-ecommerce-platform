@@ -16,10 +16,6 @@ const findProductBySku = async (sku) => {
   return Product.findOne({ sku });
 };
 
-const findProductByTitle = async (title) => {
-  return Product.findOne({ title });
-};
-
 const updateProductById = async (productId, payload) => {
   return Product.findByIdAndUpdate(productId, payload, {
     new: true,
@@ -39,13 +35,43 @@ const countProducts = async (filter) => {
   return Product.countDocuments(filter);
 };
 
+const listFeaturedProducts = async (limit = 8) => {
+  return Product.find({
+    isActive: true,
+    isFeatured: true,
+  })
+    .populate('category', 'name slug isActive')
+    .sort({ createdAt: -1 })
+    .limit(limit);
+};
+
+const listRecommendedProducts = async ({ categoryId, excludeProductId, limit = 8 }) => {
+  const filter = {
+    isActive: true,
+  };
+
+  if (categoryId) {
+    filter.category = categoryId;
+  }
+
+  if (excludeProductId) {
+    filter._id = { $ne: excludeProductId };
+  }
+
+  return Product.find(filter)
+    .populate('category', 'name slug isActive')
+    .sort({ averageRating: -1, createdAt: -1 })
+    .limit(limit);
+};
+
 export {
   createProduct,
   findProductById,
   findProductBySlug,
   findProductBySku,
-  findProductByTitle,
   updateProductById,
   listProducts,
   countProducts,
+  listFeaturedProducts,
+  listRecommendedProducts,
 };

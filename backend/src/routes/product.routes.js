@@ -2,7 +2,9 @@ import express from 'express';
 import {
   createProductController,
   deactivateProductController,
+  getFeaturedProductsController,
   getProductByIdController,
+  getRecommendedProductsController,
   listProductsController,
   updateProductController,
 } from '../controllers/product.controller.js';
@@ -72,6 +74,9 @@ const router = express.Router();
  *                 type: array
  *                 items:
  *                   type: string
+ *               isFeatured:
+ *                 type: boolean
+ *                 example: true
  *     responses:
  *       201:
  *         description: Product created successfully
@@ -88,7 +93,7 @@ router.post(
  * @swagger
  * /products:
  *   get:
- *     summary: Get products
+ *     summary: Get products for PLP
  *     tags: [Products]
  *     parameters:
  *       - in: query
@@ -107,6 +112,18 @@ router.post(
  *         name: category
  *         schema:
  *           type: string
+ *       - in: query
+ *         name: minPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: maxPrice
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: minRating
+ *         schema:
+ *           type: number
  *       - in: query
  *         name: isActive
  *         schema:
@@ -129,9 +146,39 @@ router.get('/', validate(listProductsQuerySchema, 'query'), listProductsControll
 
 /**
  * @swagger
+ * /products/featured:
+ *   get:
+ *     summary: Get featured products
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Featured products fetched successfully
+ */
+router.get('/featured', getFeaturedProductsController);
+
+/**
+ * @swagger
+ * /products/{productId}/recommended:
+ *   get:
+ *     summary: Get recommended products
+ *     tags: [Products]
+ *     parameters:
+ *       - in: path
+ *         name: productId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Recommended products fetched successfully
+ */
+router.get('/:productId/recommended', getRecommendedProductsController);
+
+/**
+ * @swagger
  * /products/{productId}:
  *   get:
- *     summary: Get product by id
+ *     summary: Get product by id for PDP
  *     tags: [Products]
  *     parameters:
  *       - in: path

@@ -89,6 +89,11 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -109,6 +114,9 @@ productSchema.index({ slug: 1 }, { unique: true });
 productSchema.index({ sku: 1 }, { unique: true });
 productSchema.index({ category: 1 });
 productSchema.index({ isActive: 1 });
+productSchema.index({ isFeatured: 1 });
+productSchema.index({ averageRating: -1 });
+productSchema.index({ price: 1 });
 productSchema.index({
   title: 'text',
   description: 'text',
