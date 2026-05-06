@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import ERROR_CODES from '../constants/errorCodes.js';
 import { findProductById } from '../repositories/product.repository.js';
 import {
@@ -7,6 +8,12 @@ import {
 } from '../repositories/wishlist.repository.js';
 import AppError from '../utils/appError.js';
 
+const buildWishlistResponse = (wishlist) => {
+  return {
+    items: wishlist.products,
+  };
+};
+
 const getOrCreateWishlist = async (userId) => {
   let wishlist = await findWishlistByUser(userId);
 
@@ -15,18 +22,27 @@ const getOrCreateWishlist = async (userId) => {
       user: userId,
       products: [],
     });
+
+    wishlist = await findWishlistByUser(userId);
   }
 
   return wishlist;
 };
 
+const validateProductId = (productId) => {
+  if (!mongoose.Types.ObjectId.isValid(productId)) {
+    throw new AppError('Invalid product id', 400, ERROR_CODES.BAD_REQUEST);
+  }
+};
+
 const getWishlistService = async (userId) => {
   const wishlist = await getOrCreateWishlist(userId);
-
-  return wishlist.products;
+  return buildWishlistResponse(wishlist);
 };
 
 const addToWishlistService = async (userId, productId) => {
+  validateProductId(productId);
+
   const product = await findProductById(productId);
 
   if (!product || !product.isActive) {
@@ -40,7 +56,7 @@ const addToWishlistService = async (userId, productId) => {
   );
 
   if (alreadyExists) {
-    return wishlist.products;
+    return buildWishlistResponse(wishlist);
   }
 
   wishlist.products.push(productId);
@@ -49,10 +65,12 @@ const addToWishlistService = async (userId, productId) => {
     products: wishlist.products,
   });
 
-  return updated.products;
+  return buildWishlistResponse(updated);
 };
 
 const removeFromWishlistService = async (userId, productId) => {
+  validateProductId(productId);
+
   const wishlist = await getOrCreateWishlist(userId);
 
   const updatedProducts = wishlist.products.filter(
@@ -63,7 +81,7 @@ const removeFromWishlistService = async (userId, productId) => {
     products: updatedProducts,
   });
 
-  return updated.products;
+  return buildWishlistResponse(updated);
 };
 
 export {

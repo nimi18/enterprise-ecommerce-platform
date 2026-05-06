@@ -1,10 +1,7 @@
 import mongoose from 'mongoose';
 import ERROR_CODES from '../constants/errorCodes.js';
 import { findAddressByUserAndId } from '../repositories/address.repository.js';
-import {
-  findCartByUser,
-  updateCartById,
-} from '../repositories/cart.repository.js';
+import { findCartByUser } from '../repositories/cart.repository.js';
 import { findProductById } from '../repositories/product.repository.js';
 import { createOrder } from '../repositories/order.repository.js';
 import AppError from '../utils/appError.js';
@@ -17,7 +14,8 @@ const buildOrderItems = async (cartItems) => {
   const items = [];
 
   for (const item of cartItems) {
-    const product = await findProductById(item.product._id);
+    const productId = item.product?._id || item.product;
+    const product = await findProductById(productId);
 
     if (!product || !product.isActive) {
       throw new AppError('Product not available', 400, ERROR_CODES.BAD_REQUEST);
@@ -43,6 +41,30 @@ const buildOrderItems = async (cartItems) => {
   }
 
   return items;
+};
+
+const buildCheckoutResponse = (order) => {
+  return {
+    _id: order._id,
+    orderId: order._id,
+    orderNumber: order.orderNumber,
+    user: order.user,
+    items: order.items,
+    addressSnapshot: order.addressSnapshot,
+    couponSnapshot: order.couponSnapshot,
+    subtotal: order.subtotal,
+    discount: order.discount,
+    shippingCharge: order.shippingCharge,
+    total: order.total,
+    paymentProvider: order.paymentProvider,
+    paymentReference: order.paymentReference,
+    paymentStatus: order.paymentStatus,
+    orderStatus: order.orderStatus,
+    shippingMethod: order.shippingMethod,
+    placedAt: order.placedAt,
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+  };
 };
 
 const checkoutService = async (userId, { addressId, shippingMethod }) => {
@@ -81,6 +103,8 @@ const checkoutService = async (userId, { addressId, shippingMethod }) => {
     ? {
         couponId: cart.coupon._id,
         code: cart.couponCodeSnapshot,
+        discountType: cart.coupon.discountType,
+        discountValue: cart.coupon.discountValue,
       }
     : null;
 
@@ -95,24 +119,15 @@ const checkoutService = async (userId, { addressId, shippingMethod }) => {
     subtotal: cart.subtotal,
     discount: cart.discount,
     shippingCharge,
-    total: cart.total + shippingCharge,
+    total: cart.subtotal - cart.discount + shippingCharge,
+    paymentProvider: 'stripe',
+    paymentReference: null,
     paymentStatus: 'pending',
     orderStatus: 'pending',
     shippingMethod,
   });
 
-  // optional: clear cart after checkout
-  await updateCartById(cart._id, {
-    items: [],
-    subtotal: 0,
-    discount: 0,
-    shippingCharge: 0,
-    total: 0,
-    coupon: null,
-    couponCodeSnapshot: '',
-  });
-
-  return order;
+  return buildCheckoutResponse(order);
 };
 
 export { checkoutService };

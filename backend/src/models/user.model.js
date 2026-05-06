@@ -6,21 +6,18 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      minlength: 2,
-      maxlength: 100,
     },
 
     email: {
       type: String,
       required: true,
-      trim: true,
       lowercase: true,
+      trim: true,
     },
 
     password: {
       type: String,
       required: true,
-      select: false,
     },
 
     role: {
@@ -29,17 +26,35 @@ const userSchema = new mongoose.Schema(
       default: 'customer',
     },
 
+    phone: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    avatarUrl: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
+    avatarPublicId: {
+      type: String,
+      default: null,
+      trim: true,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
 userSchema.index({ email: 1 }, { unique: true });
-userSchema.index({ role: 1 });
-userSchema.index({ isActive: 1 });
 
 const User = mongoose.model('User', userSchema);
 

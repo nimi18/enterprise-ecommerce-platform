@@ -72,10 +72,20 @@ const couponSnapshotSchema = new mongoose.Schema(
     couponId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Coupon',
+      default: null,
     },
-    code: String,
-    discountType: String,
-    discountValue: Number,
+    code: {
+      type: String,
+      default: null,
+    },
+    discountType: {
+      type: String,
+      default: null,
+    },
+    discountValue: {
+      type: Number,
+      default: null,
+    },
   },
   {
     _id: false,
@@ -87,6 +97,7 @@ const orderSchema = new mongoose.Schema(
     orderNumber: {
       type: String,
       required: [true, 'Order number is required'],
+      trim: true,
     },
 
     user: {
@@ -98,6 +109,12 @@ const orderSchema = new mongoose.Schema(
     items: {
       type: [orderItemSchema],
       required: true,
+      validate: {
+        validator(items) {
+          return Array.isArray(items) && items.length > 0;
+        },
+        message: 'Order must contain at least one item',
+      },
     },
 
     addressSnapshot: {
@@ -136,17 +153,19 @@ const orderSchema = new mongoose.Schema(
 
     paymentProvider: {
       type: String,
+      enum: ['stripe'],
       default: 'stripe',
     },
 
     paymentReference: {
       type: String,
       default: null,
+      trim: true,
     },
 
     paymentStatus: {
       type: String,
-      enum: ['pending', 'paid', 'failed'],
+      enum: ['pending', 'paid', 'failed', 'refunded'],
       default: 'pending',
     },
 
@@ -207,6 +226,24 @@ const orderSchema = new mongoose.Schema(
       default: null,
     },
 
+    cancelledAt: {
+      type: Date,
+      default: null,
+    },
+
+    cancelledBy: {
+      type: String,
+      enum: ['customer', 'admin', null],
+      default: null,
+    },
+
+    cancellationReason: {
+      type: String,
+      trim: true,
+      maxlength: 500,
+      default: null,
+    },
+
     placedAt: {
       type: Date,
       default: Date.now,
@@ -223,10 +260,13 @@ const orderSchema = new mongoose.Schema(
 );
 
 orderSchema.index({ orderNumber: 1 }, { unique: true });
-orderSchema.index({ user: 1 });
-orderSchema.index({ paymentStatus: 1 });
-orderSchema.index({ orderStatus: 1 });
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ paymentStatus: 1, orderStatus: 1, createdAt: -1 });
+orderSchema.index({ orderStatus: 1, createdAt: -1 });
+orderSchema.index({ paymentStatus: 1, createdAt: -1 });
+orderSchema.index({ paymentReference: 1 });
 orderSchema.index({ trackingNumber: 1 });
+orderSchema.index({ cancelledAt: -1 });
 orderSchema.index({ createdAt: -1 });
 
 const Order = mongoose.model('Order', orderSchema);

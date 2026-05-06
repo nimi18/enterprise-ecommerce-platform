@@ -112,11 +112,14 @@ const productSchema = new mongoose.Schema(
 
 productSchema.index({ slug: 1 }, { unique: true });
 productSchema.index({ sku: 1 }, { unique: true });
-productSchema.index({ category: 1 });
-productSchema.index({ isActive: 1 });
-productSchema.index({ isFeatured: 1 });
-productSchema.index({ averageRating: -1 });
-productSchema.index({ price: 1 });
+
+productSchema.index({ isActive: 1, createdAt: -1 });
+productSchema.index({ isActive: 1, category: 1, createdAt: -1 });
+productSchema.index({ isActive: 1, price: 1 });
+productSchema.index({ isActive: 1, averageRating: -1 });
+productSchema.index({ isActive: 1, isFeatured: 1, createdAt: -1 });
+productSchema.index({ isActive: 1, category: 1, averageRating: -1 });
+
 productSchema.index({
   title: 'text',
   description: 'text',

@@ -4,12 +4,14 @@ import {
   deleteReviewController,
   listProductReviewsController,
   updateReviewController,
+  getMyReviewsController,
 } from '../controllers/review.controller.js';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import validate from '../middlewares/validate.middleware.js';
 import {
   createReviewSchema,
   updateReviewSchema,
+  myReviewsQuerySchema,
 } from '../validators/review.validator.js';
 
 const router = express.Router();
@@ -20,6 +22,56 @@ const router = express.Router();
  *   name: Reviews
  *   description: Product review APIs
  */
+
+/**
+ * @swagger
+ * /reviews/me:
+ *   get:
+ *     summary: Get my reviews
+ *     tags: [Reviews]
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: number
+ *           example: 1
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: number
+ *           example: 10
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: number
+ *           example: 5
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *           example: great
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, rating]
+ *       - in: query
+ *         name: sortOrder
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *     responses:
+ *       200:
+ *         description: My reviews fetched successfully
+ */
+router.get(
+  '/me',
+  authMiddleware,
+  validate(myReviewsQuerySchema, 'query'),
+  getMyReviewsController
+);
 
 /**
  * @swagger

@@ -13,6 +13,18 @@ import AppError from '../utils/appError.js';
 import { calculateCartTotals, calculateLineTotal } from '../utils/cart.js';
 import { findCouponByCode } from '../repositories/coupon.repository.js';
 
+const normalizeProductId = (product) => {
+  if (!product) {
+    return null;
+  }
+
+  if (product._id) {
+    return product._id;
+  }
+
+  return product;
+};
+
 const buildCartResponse = (cart) => {
   return {
     _id: cart._id,
@@ -31,6 +43,8 @@ const buildCartResponse = (cart) => {
     discount: cart.discount,
     shippingCharge: cart.shippingCharge,
     total: cart.total,
+    lastActivityAt: cart.lastActivityAt,
+    expiresAt: cart.expiresAt,
     createdAt: cart.createdAt,
     updatedAt: cart.updatedAt,
   };
@@ -49,6 +63,8 @@ const getOrCreateCart = async (userId) => {
       discount: 0,
       shippingCharge: 0,
       total: 0,
+      lastActivityAt: new Date(),
+      expiresAt: null,
     });
 
     cart = await findCartByUser(userId);
@@ -59,13 +75,14 @@ const getOrCreateCart = async (userId) => {
 
 const recalculateCartPayload = ({ items, discount = 0, shippingCharge = 0 }) => {
   const normalizedItems = items.map((item) => {
+    const productId = normalizeProductId(item.product);
     const lineTotal = calculateLineTotal({
       price: item.priceSnapshot,
       quantity: item.quantity,
     });
 
     return {
-      product: item.product,
+      product: productId,
       titleSnapshot: item.titleSnapshot,
       priceSnapshot: item.priceSnapshot,
       imageSnapshot: item.imageSnapshot || '',
@@ -147,6 +164,7 @@ const addToCartService = async (userId, { productId, quantity }) => {
     ...recalculated,
     coupon: null,
     couponCodeSnapshot: '',
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -196,6 +214,7 @@ const updateCartItemService = async (userId, productId, { quantity }) => {
     ...recalculated,
     coupon: null,
     couponCodeSnapshot: '',
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -226,6 +245,7 @@ const removeCartItemService = async (userId, productId) => {
     ...recalculated,
     coupon: null,
     couponCodeSnapshot: '',
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -242,6 +262,7 @@ const clearCartService = async (userId) => {
     discount: 0,
     shippingCharge: 0,
     total: 0,
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -278,6 +299,7 @@ const moveCartItemToWishlistService = async (userId, productId) => {
     ...recalculated,
     coupon: null,
     couponCodeSnapshot: '',
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -348,6 +370,7 @@ const applyCouponService = async (userId, { code }) => {
     ...recalculated,
     coupon: coupon._id,
     couponCodeSnapshot: coupon.code,
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);
@@ -366,6 +389,7 @@ const removeCouponService = async (userId) => {
     ...recalculated,
     coupon: null,
     couponCodeSnapshot: '',
+    lastActivityAt: new Date(),
   });
 
   return buildCartResponse(updatedCart);

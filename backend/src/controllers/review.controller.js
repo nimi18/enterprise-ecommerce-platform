@@ -3,6 +3,7 @@ import {
   deleteReviewService,
   listProductReviewsService,
   updateReviewService,
+  getMyReviewsService,
 } from '../services/review.service.js';
 import asyncHandler from '../utils/asyncHandler.js';
 import { sendSuccessResponse } from '../utils/response.js';
@@ -47,9 +48,20 @@ const deleteReviewController = asyncHandler(async (req, res) => {
   });
 });
 
+const getMyReviewsController = asyncHandler(async (req, res) => {
+  const data = await getMyReviewsService(req.user.userId, req.query);
+
+  return sendSuccessResponse(res, {
+    statusCode: 200,
+    message: 'My reviews fetched successfully',
+    data,
+  });
+});
+
 export {
   createReviewController,
   listProductReviewsController,
   updateReviewController,
   deleteReviewController,
+  getMyReviewsController,
 };

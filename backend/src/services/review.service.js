@@ -9,6 +9,8 @@ import {
   getAverageRatingByProduct,
   listReviewsByProduct,
   updateReviewById,
+  findMyReviews,
+  countMyReviews,
 } from '../repositories/review.repository.js';
 import { findProductById } from '../repositories/product.repository.js';
 import { findOrdersByUser } from '../repositories/order.repository.js';
@@ -164,9 +166,48 @@ const deleteReviewService = async (userId, reviewId) => {
   return buildReviewResponse(updatedReview);
 };
 
+const getMyReviewsService = async (userId, query = {}) => {
+  const page = Number(query.page || 1);
+  const limit = Number(query.limit || 10);
+  const skip = (page - 1) * limit;
+
+  const filter = {
+    user: userId,
+    isActive: true,
+  };
+
+  if (query.rating) {
+    filter.rating = Number(query.rating);
+  }
+
+  if (query.search) {
+    filter.comment = new RegExp(query.search, 'i');
+  }
+
+  const sort = {
+    [query.sortBy || 'createdAt']: query.sortOrder === 'asc' ? 1 : -1,
+  };
+
+  const [items, total] = await Promise.all([
+    findMyReviews({ filter, sort, skip, limit }),
+    countMyReviews(filter),
+  ]);
+
+  return {
+    items: items.map(buildReviewResponse),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
+};
+
 export {
   createReviewService,
   listProductReviewsService,
   updateReviewService,
   deleteReviewService,
+  getMyReviewsService,
 };

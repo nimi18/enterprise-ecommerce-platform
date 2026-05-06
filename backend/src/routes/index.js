@@ -6,10 +6,12 @@ import cartRoutes from './cart.routes.js';
 import categoryRoutes from './category.routes.js';
 import checkoutRoutes from './checkout.routes.js';
 import healthRoutes from './health.routes.js';
+import notificationRoutes from './notification.routes.js';
 import orderRoutes from './order.routes.js';
 import paymentRoutes from './payment.routes.js';
 import productRoutes from './product.routes.js';
 import reviewRoutes from './review.routes.js';
+import userRoutes from './user.routes.js';
 import webhookRoutes from './webhook.routes.js';
 import wishlistRoutes from './wishlist.routes.js';
 
@@ -20,6 +22,7 @@ router.use('/auth', authRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
 router.use('/reviews', reviewRoutes);
+router.use('/users', userRoutes);
 router.use('/wishlist', wishlistRoutes);
 router.use('/cart', cartRoutes);
 router.use('/addresses', addressRoutes);
@@ -27,6 +30,7 @@ router.use('/checkout', checkoutRoutes);
 router.use('/payments', paymentRoutes);
 router.use('/orders', orderRoutes);
 router.use('/admin', adminRoutes);
+router.use('/notifications', notificationRoutes);
 router.use('/webhooks', webhookRoutes);
 
 export default router;

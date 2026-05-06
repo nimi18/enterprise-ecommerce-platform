@@ -4,6 +4,7 @@ import request from 'supertest';
 import app from '../../src/app.js';
 import env from '../../src/config/env.js';
 import stripe from '../../src/config/stripe.js';
+import Cart from '../../src/models/cart.model.js';
 import Order from '../../src/models/order.model.js';
 import PaymentLog from '../../src/models/paymentLog.model.js';
 import { createProductFactory, createUserFactory } from '../helpers/factories.js';
@@ -63,7 +64,7 @@ const buildSignedWebhookRequest = ({ event }) => {
 };
 
 describe('Stripe Webhook API', () => {
-  it('should update order and create payment log on checkout.session.completed', async () => {
+  it('should update order, clear cart, and create enriched payment log on checkout.session.completed', async () => {
     const user = await createUserFactory({
       email: 'customer@example.com',
       role: 'customer',
@@ -72,6 +73,24 @@ describe('Stripe Webhook API', () => {
     const product = await createProductFactory({
       sku: 'WEBHOOK-PRODUCT-001',
       price: 1000,
+    });
+
+    await Cart.create({
+      user: user._id,
+      items: [
+        {
+          product: product._id,
+          titleSnapshot: product.title,
+          priceSnapshot: product.price,
+          imageSnapshot: product.images?.[0] || '',
+          quantity: 1,
+          lineTotal: product.price,
+        },
+      ],
+      subtotal: product.price,
+      discount: 0,
+      shippingCharge: 0,
+      total: product.price,
     });
 
     const order = await createPendingOrderForUser({
@@ -90,10 +109,23 @@ describe('Stripe Webhook API', () => {
             orderId: order._id.toString(),
             userId: user._id.toString(),
           },
+          customer_details: {
+            email: 'customer@example.com',
+          },
           amount_total: 105000,
           currency: 'inr',
           payment_status: 'paid',
           status: 'complete',
+          payment_intent: {
+            id: 'pi_test_123',
+            charges: {
+              data: [
+                {
+                  id: 'ch_test_123',
+                },
+              ],
+            },
+          },
         },
       },
     };
@@ -114,9 +146,20 @@ describe('Stripe Webhook API', () => {
     expect(updatedOrder.paymentReference).to.equal('cs_test_webhook');
     expect(updatedOrder.paidAt).to.not.equal(null);
 
+    const cart = await Cart.findOne({ user: user._id });
+    expect(cart.items).to.have.length(0);
+
     const paymentLog = await PaymentLog.findOne({ eventId: event.id });
     expect(paymentLog).to.not.equal(null);
     expect(paymentLog.eventType).to.equal('checkout.session.completed');
+    expect(paymentLog.orderId.toString()).to.equal(order._id.toString());
+    expect(paymentLog.paymentReference).to.equal('cs_test_webhook');
+    expect(paymentLog.paymentIntent).to.equal('pi_test_123');
+    expect(paymentLog.charge).to.equal('ch_test_123');
+    expect(paymentLog.customerEmail).to.equal('customer@example.com');
+    expect(paymentLog.amountTotal).to.equal(105000);
+    expect(paymentLog.currency).to.equal('inr');
+    expect(paymentLog.paymentStatus).to.equal('paid');
     expect(paymentLog.status).to.equal('success');
   });
 
@@ -146,6 +189,9 @@ describe('Stripe Webhook API', () => {
           metadata: {
             orderId: order._id.toString(),
             userId: user._id.toString(),
+          },
+          customer_details: {
+            email: 'customer@example.com',
           },
           amount_total: 105000,
           currency: 'inr',

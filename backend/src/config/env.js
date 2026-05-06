@@ -28,6 +28,29 @@ const envSchema = Joi.object({
 
   EMAIL_USER: Joi.string().allow('').optional(),
   EMAIL_PASS: Joi.string().allow('').optional(),
+
+  AWS_REGION: Joi.string().allow('').optional(),
+  AWS_ACCESS_KEY_ID: Joi.string().allow('').optional(),
+  AWS_SECRET_ACCESS_KEY: Joi.string().allow('').optional(),
+  AWS_S3_BUCKET: Joi.string().allow('').optional(),
+
+  CLOUDINARY_CLOUD_NAME: Joi.string().when('NODE_ENV', {
+    is: 'test',
+    then: Joi.allow('').optional(),
+    otherwise: Joi.required(),
+  }),
+
+  CLOUDINARY_API_KEY: Joi.string().when('NODE_ENV', {
+    is: 'test',
+    then: Joi.allow('').optional(),
+    otherwise: Joi.required(),
+  }),
+
+  CLOUDINARY_API_SECRET: Joi.string().when('NODE_ENV', {
+    is: 'test',
+    then: Joi.allow('').optional(),
+    otherwise: Joi.required(),
+  }),
 }).unknown();
 
 const { error, value } = envSchema.validate(process.env, {
@@ -42,14 +65,27 @@ const env = {
   nodeEnv: value.NODE_ENV,
   port: value.PORT,
   mongoUri: value.MONGODB_URI,
+
   jwtSecret: value.JWT_SECRET,
   jwtExpiresIn: value.JWT_EXPIRES_IN,
+
   frontendUrl: value.FRONTEND_URL,
   backendUrl: value.BACKEND_URL,
+
   stripeSecretKey: value.STRIPE_SECRET_KEY,
   stripeWebhookSecret: value.STRIPE_WEBHOOK_SECRET,
+
   emailUser: value.EMAIL_USER,
   emailPass: value.EMAIL_PASS,
+
+  awsRegion: value.AWS_REGION,
+  awsAccessKeyId: value.AWS_ACCESS_KEY_ID,
+  awsSecretAccessKey: value.AWS_SECRET_ACCESS_KEY,
+  awsS3Bucket: value.AWS_S3_BUCKET,
+
+  cloudinaryCloudName: value.CLOUDINARY_CLOUD_NAME,
+  cloudinaryApiKey: value.CLOUDINARY_API_KEY,
+  cloudinaryApiSecret: value.CLOUDINARY_API_SECRET,
 };
 
 export default env;

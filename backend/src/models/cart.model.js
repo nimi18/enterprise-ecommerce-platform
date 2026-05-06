@@ -5,37 +5,37 @@ const cartItemSchema = new mongoose.Schema(
     product: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Product',
-      required: [true, 'Product is required'],
+      required: true,
     },
 
     titleSnapshot: {
       type: String,
-      required: [true, 'Product title snapshot is required'],
+      required: true,
       trim: true,
     },
 
     priceSnapshot: {
       type: Number,
-      required: [true, 'Product price snapshot is required'],
-      min: [0, 'Price snapshot cannot be negative'],
+      required: true,
+      min: 0,
     },
 
     imageSnapshot: {
       type: String,
-      trim: true,
       default: '',
+      trim: true,
     },
 
     quantity: {
       type: Number,
-      required: [true, 'Quantity is required'],
-      min: [1, 'Quantity must be at least 1'],
+      required: true,
+      min: 1,
     },
 
     lineTotal: {
       type: Number,
-      required: [true, 'Line total is required'],
-      min: [0, 'Line total cannot be negative'],
+      required: true,
+      min: 0,
     },
   },
   {
@@ -48,19 +48,12 @@ const cartSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
-      required: [true, 'User is required'],
+      required: true,
     },
 
     items: {
       type: [cartItemSchema],
       default: [],
-      validate: {
-        validator(items) {
-          const productIds = items.map((item) => String(item.product));
-          return new Set(productIds).size === productIds.length;
-        },
-        message: 'Duplicate products are not allowed in cart items',
-      },
     },
 
     coupon: {
@@ -71,33 +64,43 @@ const cartSchema = new mongoose.Schema(
 
     couponCodeSnapshot: {
       type: String,
+      default: '',
       trim: true,
       uppercase: true,
-      default: '',
     },
 
     subtotal: {
       type: Number,
       default: 0,
-      min: [0, 'Subtotal cannot be negative'],
+      min: 0,
     },
 
     discount: {
       type: Number,
       default: 0,
-      min: [0, 'Discount cannot be negative'],
+      min: 0,
     },
 
     shippingCharge: {
       type: Number,
       default: 0,
-      min: [0, 'Shipping charge cannot be negative'],
+      min: 0,
     },
 
     total: {
       type: Number,
       default: 0,
-      min: [0, 'Total cannot be negative'],
+      min: 0,
+    },
+
+    lastActivityAt: {
+      type: Date,
+      default: Date.now,
+    },
+
+    expiresAt: {
+      type: Date,
+      default: null,
     },
   },
   {
@@ -106,7 +109,9 @@ const cartSchema = new mongoose.Schema(
 );
 
 cartSchema.index({ user: 1 }, { unique: true });
-cartSchema.index({ 'items.product': 1 });
+cartSchema.index({ lastActivityAt: 1 });
+cartSchema.index({ expiresAt: 1 });
+cartSchema.index({ updatedAt: -1 });
 
 const Cart = mongoose.model('Cart', cartSchema);
 

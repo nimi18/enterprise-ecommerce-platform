@@ -26,7 +26,7 @@ const createAddressForUser = async (userId) => {
 };
 
 describe('Checkout API', () => {
-  it('should create pending order from cart', async () => {
+  it('should create pending order from cart without clearing cart before payment', async () => {
     const { token, user } = await loginAndGetToken({
       email: 'customer@example.com',
       role: 'customer',
@@ -60,6 +60,8 @@ describe('Checkout API', () => {
 
     expect(response.status).to.equal(201);
     expect(response.body.success).to.equal(true);
+    expect(response.body.data._id).to.be.a('string');
+    expect(response.body.data.orderId).to.be.a('string');
     expect(response.body.data.paymentStatus).to.equal('pending');
     expect(response.body.data.orderStatus).to.equal('pending');
     expect(response.body.data.items).to.have.length(1);
@@ -69,7 +71,7 @@ describe('Checkout API', () => {
     expect(order).to.not.equal(null);
 
     const cart = await Cart.findOne({ user: user._id });
-    expect(cart.items).to.have.length(0);
+    expect(cart.items).to.have.length(1);
   });
 
   it('should fail checkout when cart is empty', async () => {

@@ -70,7 +70,11 @@ describe('Order API', () => {
 
     expect(response.status).to.equal(200);
     expect(response.body.success).to.equal(true);
-    expect(response.body.data).to.have.length(1);
+    expect(response.body.data.items).to.have.length(1);
+    expect(response.body.data.pagination.total).to.equal(1);
+    expect(response.body.data.items[0].user.toString()).to.equal(
+      user._id.toString()
+    );
   });
 
   it('should fetch current user order by id', async () => {
@@ -96,15 +100,16 @@ describe('Order API', () => {
     expect(response.status).to.equal(200);
     expect(response.body.success).to.equal(true);
     expect(response.body.data._id).to.equal(order._id.toString());
+    expect(response.body.data.user.toString()).to.equal(user._id.toString());
   });
 
   it('should not allow user to fetch another user order', async () => {
-    const { user } = await loginAndGetToken({
+    const ownerLogin = await loginAndGetToken({
       email: 'owner@example.com',
       role: 'customer',
     });
 
-    const { token } = await loginAndGetToken({
+    const otherLogin = await loginAndGetToken({
       email: 'other@example.com',
       role: 'customer',
     });
@@ -115,13 +120,13 @@ describe('Order API', () => {
     });
 
     const order = await createOrderForUser({
-      userId: user._id,
+      userId: ownerLogin.user._id,
       product,
     });
 
     const response = await request(app)
       .get(`/api/orders/${order._id}`)
-      .set('Authorization', `Bearer ${token}`);
+      .set('Authorization', `Bearer ${otherLogin.token}`);
 
     expect(response.status).to.equal(404);
     expect(response.body.success).to.equal(false);

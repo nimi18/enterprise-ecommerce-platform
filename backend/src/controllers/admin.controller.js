@@ -1,4 +1,5 @@
 import {
+  adminCancelOrderService,
   getAllOrdersService,
   getAnyOrderByIdService,
   updateOrderStatusService,
@@ -7,7 +8,7 @@ import asyncHandler from '../utils/asyncHandler.js';
 import { sendSuccessResponse } from '../utils/response.js';
 
 const getAllOrdersController = asyncHandler(async (req, res) => {
-  const data = await getAllOrdersService();
+  const data = await getAllOrdersService(req.query);
 
   return sendSuccessResponse(res, {
     message: 'All orders fetched successfully',
@@ -33,8 +34,18 @@ const updateOrderStatusController = asyncHandler(async (req, res) => {
   });
 });
 
+const adminCancelOrderController = asyncHandler(async (req, res) => {
+  const data = await adminCancelOrderService(req.params.orderId, req.body);
+
+  return sendSuccessResponse(res, {
+    message: 'Order cancelled successfully',
+    data,
+  });
+});
+
 export {
   getAllOrdersController,
   getAnyOrderByIdController,
   updateOrderStatusController,
+  adminCancelOrderController,
 };

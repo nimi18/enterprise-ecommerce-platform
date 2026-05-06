@@ -31,7 +31,10 @@ const buildAddressResponse = (address) => {
 };
 
 const addAddressService = async (userId, payload) => {
-  if (payload.isDefault) {
+  const existingAddresses = await findAddressesByUser(userId);
+  const shouldSetDefault = existingAddresses.length === 0 || payload.isDefault === true;
+
+  if (shouldSetDefault) {
     await unsetDefaultAddresses(userId);
   }
 
@@ -47,7 +50,7 @@ const addAddressService = async (userId, payload) => {
     country: payload.country,
     landmark: payload.landmark || '',
     addressType: payload.addressType || 'home',
-    isDefault: payload.isDefault ?? false,
+    isDefault: shouldSetDefault,
   });
 
   return buildAddressResponse(address);
